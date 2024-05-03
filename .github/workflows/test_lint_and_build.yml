@@ -1,7 +1,4 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Go
+name: Test lint and build
 
 on:
   push:
@@ -10,11 +7,13 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   workflow:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+          persist-credentials: false 
+          fetch-depth: 0 
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -24,14 +23,19 @@ jobs:
 
     - uses: extractions/setup-just@v1
 
-    - name: Test
-      run: just test
-
     - name: Lint
       uses: golangci/golangci-lint-action@v3
       with:
         version: v1.57.2
         args: --out-format=colored-line-number -v ./...
+
+    - name: Test
+      run: just test-ci
+
+    - name: Go Coverage Badge
+      uses: tj-actions/coverage-badge-go@v2
+      with:
+        filename: coverage.out
 
     - name: Build
       run: go build -v ./...
